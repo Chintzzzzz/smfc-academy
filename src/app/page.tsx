@@ -1,10 +1,13 @@
 import Link from 'next/link';
-import { getPlayersByYear } from '@/lib/data';
+import { getPlayerSeasons, computeSquadAverages } from '@/lib/data';
 
 export default function HomePage() {
-  const players2011 = getPlayersByYear(2011);
-  const avgSuccessRate =
-    players2011.reduce((sum, p) => sum + p.successPercent, 0) / players2011.length;
+  const players = getPlayerSeasons('duels_2011.csv');
+  const playedPlayers = players.filter((p) => p.played);
+  const squadAvg = computeSquadAverages(players);
+  const allMDs = Array.from(
+    new Set(players.flatMap((p) => p.matchDays.map((r) => r.md)))
+  );
 
   return (
     <div>
@@ -29,11 +32,11 @@ export default function HomePage() {
       {/* Quick stats */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
         <div className="bg-gray-900 border border-gray-800 rounded p-6">
-          <p className="text-4xl font-black text-yellow-400">{players2011.length}</p>
+          <p className="text-4xl font-black text-yellow-400">{playedPlayers.length}</p>
           <p className="text-gray-400 text-sm mt-1 uppercase tracking-widest">Players tracked</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded p-6">
-          <p className="text-4xl font-black text-white">{avgSuccessRate.toFixed(1)}%</p>
+          <p className="text-4xl font-black text-white">{squadAvg.avgIndividualAvgSR.toFixed(1)}%</p>
           <p className="text-gray-400 text-sm mt-1 uppercase tracking-widest">Avg duel win rate</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded p-6">
@@ -41,12 +44,11 @@ export default function HomePage() {
           <p className="text-gray-400 text-sm mt-1 uppercase tracking-widest">Birth year cohort</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded p-6">
-          <p className="text-4xl font-black text-white">8</p>
+          <p className="text-4xl font-black text-white">{allMDs.length}</p>
           <p className="text-gray-400 text-sm mt-1 uppercase tracking-widest">Match days</p>
         </div>
       </section>
 
-      {/* CTA */}
       <Link
         href="/squad"
         className="inline-flex items-center gap-3 bg-yellow-400 text-black font-bold px-8 py-4 rounded hover:bg-yellow-300 transition-colors text-sm tracking-wide uppercase"
